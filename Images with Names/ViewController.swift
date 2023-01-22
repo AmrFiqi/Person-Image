@@ -71,14 +71,35 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         
         ac.addAction(UIAlertAction(title: "Cancel", style: .default))
         
-
+        
         ac.addAction(UIAlertAction(title: "Ok", style: .default){
             [weak self, weak ac] _ in
             guard let newName = ac?.textFields?[0].text else{return}
             person.name = newName
             self?.collectionView.reloadData()
         })
-        present(ac, animated: true)
+        
+        let ac2 = UIAlertController(title: "Choose Action", message: nil, preferredStyle: .alert)
+        ac2.addAction(UIAlertAction(title: "Delete", style:.default){
+            [weak self] _ in
+            self?.people.remove(at: indexPath.item)
+            self?.collectionView.reloadData()
+        })
+        ac2.addTextField()
+        ac2.addAction(UIAlertAction(title: "Rename", style: .default){
+            [weak self, weak ac2] _ in
+            
+            guard let newName = ac2?.textFields?[0].text else{return}
+            person.name = newName
+            self?.collectionView.reloadData()
+        })
+        if (person.name == "Unknown"){
+            present(ac, animated: true)
+        }
+        else{
+            present(ac2, animated: true)
+        }
+        
     }
 }
 
