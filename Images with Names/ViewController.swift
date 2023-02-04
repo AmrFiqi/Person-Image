@@ -14,6 +14,12 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewPerson))
+        let defaults = UserDefaults.standard
+        if let savedPeople = defaults.object(forKey: "people") as? Data {
+            if let decodePeople = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(savedPeople) as? [Person] {
+                people =  decodePeople
+            }
+        }
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -53,8 +59,9 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         
         let person = Person(name: "Unknown", image: imageName)
         people.append(person)
+        print("hi")
+        self.save()
         collectionView.reloadData()
-        
         dismiss(animated: true)
     }
     
@@ -77,6 +84,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
             guard let newName = ac?.textFields?[0].text else{return}
             person.name = newName
             self?.collectionView.reloadData()
+            self?.save()
         })
         
         let ac2 = UIAlertController(title: "Choose Action", message: nil, preferredStyle: .alert)
@@ -84,6 +92,8 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
             [weak self] _ in
             self?.people.remove(at: indexPath.item)
             self?.collectionView.reloadData()
+            
+            self?.save()
         })
         ac2.addTextField()
         ac2.addAction(UIAlertAction(title: "Rename", style: .default){
@@ -92,6 +102,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
             guard let newName = ac2?.textFields?[0].text else{return}
             person.name = newName
             self?.collectionView.reloadData()
+            self?.save()
         })
         if (person.name == "Unknown"){
             present(ac, animated: true)
@@ -100,6 +111,13 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
             present(ac2, animated: true)
         }
         
+    }
+    
+    func save (){
+        if let saveData = try? NSKeyedArchiver.archivedData(withRootObject: people, requiringSecureCoding: false){
+            let defaults = UserDefaults.standard
+            defaults.set(saveData, forKey: "people")
+        }
     }
 }
 
